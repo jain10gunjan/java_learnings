@@ -27,7 +27,6 @@ public class HotelReservationSystem {
                 System.out.println("4. Update Reservation");
                 System.out.println("5. Delete Reservation");
                 System.out.println("6. Exit");
-                System.out.println("0. Exit");
                 System.out.println("Choose an option: ");
                 int choice = scanner.nextInt();
 
@@ -41,12 +40,12 @@ public class HotelReservationSystem {
                     case 3:
                         getRoomNumber(connection, scanner);
                         break;
-//                    case 4:
-//                        updateReservation(connection, scanner);
-//                        break;
-//                    case 5:
-//                        deleteReservation(connection, scanner);
-//                        break;
+                    case 4:
+                        updateReservation(connection, scanner);
+                        break;
+                    case 5:
+                        deleteReservation(connection, scanner);
+                        break;
                     case 6:
 //                        exit();
                         scanner.close();
@@ -141,10 +140,10 @@ private static void updateReservation(Connection connection, Scanner scanner){
     int reservationId = scanner.nextInt();
     scanner.nextLine();
 
-//    if(!reservationExists(connection, scanner)){
-//        System.out.println("Reservation not found for the given ID: " + reservationId);
-//        return;
-//    }
+    if(!reservationExists(connection, reservationId)){
+        System.out.println("Reservation not found for the given ID: " + reservationId);
+        return;
+    }
 
     System.out.println("Enter new guest name: ");
     String newGuestName = scanner.next();
@@ -155,7 +154,7 @@ private static void updateReservation(Connection connection, Scanner scanner){
     System.out.println("Enter new contact number: ");
     String newContactNumber = scanner.nextLine();
 
-    String sqlQuery = "Update reservations set guest_name= '" + newGuestName + "', " + "room_number=" + newRoomNumber + ", " + "contact_number = ' " + newContactNumber + ", " + "where reservation_id = " + reservationId;
+    String sqlQuery = "UPDATE reservations SET guest_name = '" + newGuestName + "', room_number = " + newRoomNumber + ", contact_number = '" + newContactNumber + "' WHERE reservation_id = " + reservationId;
     try(Statement statement = connection.createStatement();){
         int affectedRows = statement.executeUpdate(sqlQuery);
         if(affectedRows > 0){
@@ -166,5 +165,45 @@ private static void updateReservation(Connection connection, Scanner scanner){
     }catch(SQLException e){
         System.out.println(e.getMessage());
     }
+}
+
+private static Boolean reservationExists(Connection connection, int reservationId){
+        String sqlQuery = "select * from reservations where reservation_id =" + reservationId;
+        try(Statement statement =  connection.createStatement();
+        ResultSet resultset = statement.executeQuery(sqlQuery)){
+            if(resultset.next()){
+                return true;
+            }
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return false;
+}
+
+private static void deleteReservation(Connection connection, Scanner scanner){
+        //Ask User for the reservation id
+    // check that reservation id first whether exists or not
+    //if exists delete that id
+    try{
+        System.out.println("Enter the reservation id to delete:");
+        int reservationId = scanner.nextInt();
+        if(!reservationExists(connection, reservationId)){
+            System.out.println("Reservation does not exists for the given reseravation id: " + reservationId);
+            return;
+        }
+
+        String sqlQuery = "delete from reservations where reservation_id=" + reservationId;
+        try(Statement statement = connection.createStatement();){
+            int affectedRows = statement.executeUpdate(sqlQuery);
+            if(affectedRows > 0){
+                System.out.println("Reservation deleted successfully.");
+            }else{
+                System.out.println("Deletion not possible");
+            }
+        }
+    }catch(SQLException e){
+        System.out.println(e.getMessage());
+    }
+
 }
 }
